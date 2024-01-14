@@ -1,95 +1,172 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+// import Image from 'next/image'
+// import styles from './page.module.css'
 
-export default function Home() {
+// export default function Home() {
+//   return (
+//     <main >
+//       <h1>Hello</h1>
+//     </main>
+//   )
+// }
+
+// pages/index.tsx
+"use client";
+import { useState, useEffect } from 'react';
+
+const HangmanGame = () => {
+  const wordBank = ['elephant', 'pineapple', 'sunflower', 'mountain', 'ocean', 'giraffe', 'watermelon'];
+  const [word, setWord] = useState<string>('');
+  const [guessedWord, setGuessedWord] = useState<string[]>([]);
+  const [clue, setClue] = useState<string>('');
+  const [incorrectGuesses, setIncorrectGuesses] = useState<number>(0);
+  const [round, setRound] = useState<number>(1);
+
+  useEffect(() => {
+    initializeGame();
+  }, [round]);
+
+  const getRandomWord = () => {
+    const randomIndex = Math.floor(Math.random() * wordBank.length);
+    return wordBank[randomIndex].toLowerCase();
+  };
+
+  const generateClue = (word: string) => {
+    const thirdIndex = Math.ceil(word.length / 3);
+    return word.substring(0, thirdIndex) + Array(word.length - thirdIndex).fill('_').join('');
+  };
+
+  const initializeGame = () => {
+    const newWord = getRandomWord();
+    setWord(newWord);
+    setClue(generateClue(newWord));
+    setGuessedWord(Array(newWord.length).fill('_'));
+    setIncorrectGuesses(0);
+  };
+
+  const displayWord = () => {
+    return guessedWord.map((letter, index) => <span key={index}>{letter} </span>);
+  };
+
+  const displayHangman = () => {
+    const hangmanStages = [
+      `
+        ------
+        |    |
+        |
+        |
+        |
+        |
+      `,
+      `
+        ------
+        |    |
+        |    O
+        |
+        |
+        |
+      `,
+      `
+        ------
+        |    |
+        |    O
+        |    |
+        |
+        |
+      `,
+      `
+        ------
+        |    |
+        |    O
+        |   /|
+        |
+        |
+      `,
+      `
+        ------
+        |    |
+        |    O
+        |   /|\\
+        |
+        |
+      `,
+      `
+        ------
+        |    |
+        |    O
+        |   /|\\
+        |   /
+        |
+      `,
+      `
+        ------
+        |    |
+        |    O
+        |   /|\\
+        |   / \\
+        |
+      `,
+    ];
+
+    return <pre>{hangmanStages[incorrectGuesses]}</pre>;
+  };
+
+  const makeGuess = (letter: string) => {
+    let newGuessedWord = [...guessedWord];
+    let letterIndex = word.indexOf(letter);
+
+    if (letterIndex !== -1) {
+      while (letterIndex !== -1) {
+        newGuessedWord[letterIndex] = letter;
+        letterIndex = word.indexOf(letter, letterIndex + 1);
+      }
+      setGuessedWord(newGuessedWord);
+    } else {
+      setIncorrectGuesses((prev) => prev + 1);
+    }
+  };
+
+  const handleGuess = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const guess = event.target.value.toLowerCase();
+    event.target.value = ''; // Clear the input field after a guess
+
+    if (guess.length === 1 && guess.match(/[a-z]/i)) {
+      if (!guessedWord.includes(guess)) {
+        makeGuess(guess);
+      }
+    }
+  };
+
+  const isGameOver = !guessedWord.includes('_') || incorrectGuesses === 6;
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
+    <div>
+      <h1>Welcome to Hangman! Try to guess the word.</h1>
+      <p>Round {round}</p>
+      <p>Clue: {clue}</p>
+      {!isGameOver && (
+        <>
+          <div>{displayWord()}</div>
+          <div>{displayHangman()}</div>
+          <input
+            type="text"
+            maxLength={1}
+            style={{ textTransform: 'lowercase' }}
+            onChange={handleGuess}
+          />
+        </>
+      )}
+      {isGameOver && (
         <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+          <h2>
+            {incorrectGuesses === 6
+              ? `Sorry, you ran out of guesses. The correct word was: ${word}`
+              : `Congratulations! You guessed the word: ${word}`}
+          </h2>
+          <button onClick={() => setRound((prevRound) => prevRound + 1)}>Next Round</button>
         </div>
-      </div>
+      )}
+    </div>
+  );
+};
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+export default HangmanGame;
