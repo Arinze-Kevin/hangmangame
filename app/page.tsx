@@ -17,7 +17,7 @@ const HangmanGame = () => {
   const wordBank = ['elephant', 'pineapple', 'sunflower', 'mountain', 'ocean', 'giraffe', 'watermelon'];
   const [word, setWord] = useState<string>('');
   const [guessedWord, setGuessedWord] = useState<string[]>([]);
-  const [clue, setClue] = useState<string>('');
+  const [clue, setClue] = useState<string>(''); // Added clue state
   const [incorrectGuesses, setIncorrectGuesses] = useState<number>(0);
   const [round, setRound] = useState<number>(1);
 
@@ -31,6 +31,7 @@ const HangmanGame = () => {
   };
 
   const generateClue = (word: string) => {
+    // Display one-third of the word as a clue
     const thirdIndex = Math.ceil(word.length / 3);
     return word.substring(0, thirdIndex) + Array(word.length - thirdIndex).fill('_').join('');
   };
@@ -125,9 +126,8 @@ const HangmanGame = () => {
     }
   };
 
-  const handleGuess = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const guess = event.target.value.toLowerCase();
-    event.target.value = ''; // Clear the input field after a guess
+  const handleGuess = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const guess = event.key.toLowerCase();
 
     if (guess.length === 1 && guess.match(/[a-z]/i)) {
       if (!guessedWord.includes(guess)) {
@@ -151,7 +151,7 @@ const HangmanGame = () => {
             type="text"
             maxLength={1}
             style={{ textTransform: 'lowercase' }}
-            onChange={handleGuess}
+            onKeyPress={handleGuess}
           />
         </>
       )}
